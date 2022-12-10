@@ -2,29 +2,29 @@ version: "3"
 services:
   httpd-static:
     image: annenmrts/httpd
-    container_name: httpd-static
     networks:
       - proxy
     restart: unless-stopped
     ports:
-      - 8080:80
+      - 80
     labels:
       - traefik.http.routers.httpd-static.rule=Host(`localhost`)
+      - "traefik.http.services.whoami-service.loadBalancer.sticky.cookie=true"
+      - "traefik.http.services.whoami-service.loadBalancer.sticky.cookie.name=whoami_cookie_name"
   express:
     image: annenmrts/express
-    container_name: express-server
     networks:
       - proxy
     restart: unless-stopped
     ports:
-      - 8081:1337
+      - 1337
     labels:
       - traefik.http.routers.express-server.rule=PathPrefix(`/api`)
       - traefik.http.routers.express-server.middlewares=admin-stripprefix
       - traefik.http.middlewares.admin-stripprefix.stripprefix.prefixes=/api
   reverse_proxy:
     image: traefik:v2.9
-    command: --api.insecure=true --providers.docker
+    command: --api.insecure=true --providers.docker --accesslog=true
     ports:
       - 80:80
       - 8001:8080
@@ -32,7 +32,18 @@ services:
       - proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    command: --admin-password '$$2y$$05$$dR2GSPKuBQYcueDggC3bmOA/WaZD8SSzG54u7aNrxFozME3TUMDHC'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 9000:9000
+    networks:
+      - proxy
 networks:
   proxy:
     name: traefik-net

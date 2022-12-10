@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <main>
+        <p>Username name: <span id="username"></span></p>
+        <p>Account name: <span id="accountname"></span></p>
+        <p>Ethereum address: <span id="ethaddress"></span></p>
+    </main>
+</body>
+</html>
+
+<script>
+    function update() {
+        fetch("/api/account").then(res => {
+            res.json().then(res => {
+                let userElem = document.getElementById("username");
+                let accountElem = document.getElementById("accountname");
+                let addressElem = document.getElementById("ethaddress");
+                userElem.innerHTML = res.userName;
+                accountElem.innerHTML = res.accountName;
+                addressElem.innerHTML = res.ethAddress;
+            })
+        });
+    }
+    setInterval(update, 1000);
+</script>
